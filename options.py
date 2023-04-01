@@ -60,7 +60,7 @@ def getSrcs(sync):
                 for root, dirs, files in os.walk(base_folder):
                     for file in files:
                         srcs.append(os.path.join(root, file))
-                        print("Adding file %s to the list of files to sync" % os.path.join(root, file))
+                        #print("Adding file %s to the list of files to sync" % os.path.join(root, file))
             else:
                 print("Error: %s is not a directory" % base_folder)
     else:
@@ -70,6 +70,10 @@ def getSrcs(sync):
             if os.path.isdir(base_folder):
                 for file in os.listdir(base_folder):
                     srcs.append(os.path.join(base_folder, file))
-                    print("Adding file %s to the list of files to sync" % os.path.join(base_folder, file))
+                    #print("Adding file %s to the list of files to sync" % os.path.join(base_folder, file))
+            elif os.path.isfile(base_folder): # if it's a file, just add it to the list case of * pass in parameter of SRC
+                srcs.append(base_folder)
+                #print("Adding file %s to the list of files to sync" % base_folder)
             else:
                 print("Error: %s is not a directory" % base_folder)
+    return srcs
