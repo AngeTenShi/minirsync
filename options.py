@@ -34,15 +34,23 @@ def getArgs():
     parser.add_argument('--port', type=int, help='Specify double-colon alternate port number')
     parser.add_argument('--list-only', action='store_true', help='List the files instead of copying them')
     parser.add_argument('src', nargs='+', help='Sources files to sync')
-    parser.add_argument('dest', nargs='?', help='Destination folder to sync (optional if --list-only is used)')
+    parser.add_argument('dest' , nargs="?", help='Destination folder to sync (optional if --list-only is used)')
 
     args = parser.parse_args() # Parse the command line options and return the result
     if not args.src:
+        print("There is no source")
         parser.print_help()
         sys.exit(1)
-    if not args.dest and not args.list_only:
-        parser.print_help()
-        sys.exit(1)
+    if args.list_only:
+        args.dest = None
+        args.src = args.src[0] # if we are in list only mode we only have one source even if we have more than one in parameter
+    else:
+        if len(args.src) > 1:
+            args.dest = args.src[-1]
+        else:
+            print("There is no destination")
+            parser.print_help()
+            sys.exit(1)
     return args
 
 
@@ -54,30 +62,59 @@ def getSrcs(sync):
     srcs = []
     if args.recursive:
         #get the absolute path of the base folder and add all files into srcs recursively
-        for base_folder in args.src:
+        if type(args.src) is list: # if we have more than one source
+            for base_folder in args.src:
+                if os.path.isdir(os.path.abspath(base_folder)):
+                    for root, dirs, files in os.walk(base_folder):
+                        for file in files:
+                            srcs.append(os.path.join(root, file))
+                            #print("Adding file %s to the list of files to sync" % os.path.join(root, file))
+                elif os.path.isfile(base_folder): # if it's a file, just add it to the list
+                    srcs.append(os.path.basename(base_folder))
+                    #print("Adding file %s to the list of files to sync" % os.path.basename(base_folder))
+                else:
+                    print("Error: %s is not a directory or a file" % base_folder)
+        else:
+            base_folder = args.src
             if os.path.isdir(os.path.abspath(base_folder)):
                 for root, dirs, files in os.walk(base_folder):
                     for file in files:
                         srcs.append(os.path.join(root, file))
-                        print("Adding file %s to the list of files to sync" % file)
-            elif os.path.isfile(base_folder): # if it's a file, just add it to the list
+                        #print("Adding file %s to the list of files to sync" % os.path.join(root, file))
+            elif os.path.isfile(base_folder):  # if it's a file, just add it to the list
                 srcs.append(os.path.basename(base_folder))
-                print("Adding file %s to the list of files to sync" % os.path.basename(base_folder))
+                #print("Adding file %s to the list of files to sync" % os.path.basename(base_folder))
             else:
                 print("Error: %s is not a directory or a file" % base_folder)
+
     else:
         #get the absolute path of the base folder and add all files into srcs
-        for base_folder in args.src:
+        if type(args.src) is list: # if we have more than one source
+            for base_folder in args.src:
+                if os.path.isdir(os.path.abspath(base_folder)):
+                    if not base_folder.endswith(os.sep) and base_folder != '.': # if the directory doesn't end with a slash don't add it
+                        print("Error we are not able to copy a directory without the -r option")
+                    else:
+                        for file in os.listdir(base_folder):
+                            srcs.append(base_folder + '/' + os.path.basename(file)) # add the file to the list but not his directory root
+                            #print("Adding file %s to the list of files to sync" % (base_folder + '/' + os.path.basename(file)))
+                elif os.path.isfile(base_folder): # if it's a file, just add it to the list
+                    srcs.append(os.path.basename(base_folder))
+                    #print("Adding file %s to the list of files to sync" % os.path.basename(base_folder))
+                else:
+                    print("Error: %s is not a directory or a file" % base_folder)
+        else:
+            base_folder = args.src
             if os.path.isdir(os.path.abspath(base_folder)):
                 if not base_folder.endswith(os.sep) and base_folder != '.': # if the directory doesn't end with a slash don't add it
                     print("Error we are not able to copy a directory without the -r option")
                 else:
                     for file in os.listdir(base_folder):
                         srcs.append(base_folder + '/' + os.path.basename(file)) # add the file to the list but not his directory root
-                        print("Adding file %s to the list of files to sync" % (base_folder + '/' + os.path.basename(file)))
+                        #print("Adding file %s to the list of files to sync" % (base_folder + '/' + os.path.basename(file)))
             elif os.path.isfile(base_folder): # if it's a file, just add it to the list
                 srcs.append(os.path.basename(base_folder))
-                print("Adding file %s to the list of files to sync" % os.path.basename(base_folder))
+                #print("Adding file %s to the list of files to sync" % os.path.basename(base_folder))
             else:
                 print("Error: %s is not a directory or a file" % base_folder)
     return srcs
