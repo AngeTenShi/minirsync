@@ -1,6 +1,7 @@
 import os
 import sys
 import options # import du fichier options.py
+import filelist #import du fichier filelist.py
 
 class Sync :
     def __init__(self):
@@ -17,4 +18,4 @@ class Sync :
 if __name__ == '__main__':
     sync = Sync()
     sync.setArgs(options.getArgs())
-    sync.setSrc(options.getSrcs(sync))
+    sync.setSrc(filelist.getSrcs(sync))
