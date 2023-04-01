@@ -33,8 +33,8 @@ def getArgs():
     parser.add_argument('--address', help='Bind address for outgoing socket to daemon')
     parser.add_argument('--port', type=int, help='Specify double-colon alternate port number')
     parser.add_argument('--list-only', action='store_true', help='List the files instead of copying them')
-    parser.add_argument('src', nargs='+', help='Sources à synchroniser')
-    parser.add_argument('dest', nargs='?', help='Destination de la synchronisation')
+    parser.add_argument('src', nargs='+', help='Sources files to sync')
+    parser.add_argument('dest', nargs='?', help='Destination folder to sync (optional if --list-only is used)')
 
     args = parser.parse_args() # Parse the command line options and return the result
     if not args.src:
@@ -45,6 +45,7 @@ def getArgs():
         sys.exit(1)
     return args
 
+
 def getSrcs(sync):
     """
     Return the list of sources to sync
@@ -52,11 +53,23 @@ def getSrcs(sync):
     args = sync.args
     srcs = []
     if args.recursive:
-        base_folder = args.src[0]
         #get the absolute path of the base folder and add all files into srcs recursively
-        base_folder = os.path.abspath(base_folder)
-        if os.path.isdir(base_folder):
-            for root, dirs, files in os.walk(base_folder):
-                for file in files:
-                    srcs.append(os.path.join(root, file))
-                    print("Adding file %s to the list of files to sync" % os.path.join(root, file))
+        for base_folder in args.src:
+            base_folder = os.path.abspath(base_folder)
+            if os.path.isdir(base_folder):
+                for root, dirs, files in os.walk(base_folder):
+                    for file in files:
+                        srcs.append(os.path.join(root, file))
+                        print("Adding file %s to the list of files to sync" % os.path.join(root, file))
+            else:
+                print("Error: %s is not a directory" % base_folder)
+    else:
+        #get the absolute path of the base folder and add all files into srcs
+        for base_folder in args.src:
+            base_folder = os.path.abspath(base_folder)
+            if os.path.isdir(base_folder):
+                for file in os.listdir(base_folder):
+                    srcs.append(os.path.join(base_folder, file))
+                    print("Adding file %s to the list of files to sync" % os.path.join(base_folder, file))
+            else:
+                print("Error: %s is not a directory" % base_folder)
