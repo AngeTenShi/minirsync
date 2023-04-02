@@ -15,7 +15,11 @@ class Sync :
         self.src = srcs
     def setDest(self, dest):
         self.dest = dest
+
 if __name__ == '__main__':
     sync = Sync()
     sync.setArgs(options.getArgs())
     sync.setSrc(filelist.getSrcs(sync))
+    sync.setDest(sync.args.dest)
+    if sync.args.list_only:
+        filelist.printSrcs(sync.src)

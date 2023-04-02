@@ -1,4 +1,6 @@
 import os
+import datetime
+import stat
 def getSrcs(sync):
     """
     Return the list of sources to sync
@@ -63,3 +65,26 @@ def getSrcs(sync):
             else:
                 print("Error: %s is not a directory or a file" % base_folder)
     return srcs
+
+def formatFilePrint(file_path):
+        stat_info = os.stat(file_path) # Obtient les informations sur le fichier
+        mode = stat_info.st_mode        # Obtient les droits du fichier
+        perms = '-'
+        for who in 'USR', 'GRP', 'OTH':
+            for what in 'R', 'W', 'X':
+                if mode & getattr(stat, f'S_I{what}{who}'):
+                    perms += what.lower()
+                else:
+                    perms += '-'
+        size = stat_info.st_size
+        mod_time = datetime.datetime.fromtimestamp(stat_info.st_mtime).strftime('%Y/%m/%d %H:%M:%S') # Obtient la taille et la date de modification
+        if file_path.startswith('./'): #on enleve le ./ si les srcs sont dans le dossier courant
+            file_path = file_path[2:]
+        print(f"{perms} {size:>10} {mod_time} {file_path}") # Formatte la ligne de sortie
+
+def printSrcs(srcs):
+    """
+    Print the list of sources to sync
+    """
+    for src in srcs:
+        formatFilePrint(src)
