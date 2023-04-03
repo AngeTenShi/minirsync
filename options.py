@@ -47,6 +47,7 @@ def getArgs():
     else:
         if len(args.src) > 1:
             args.dest = args.src[-1]
+            args.src = args.src[:-1]
         else:
             print("There is no destination")
             parser.print_help()
