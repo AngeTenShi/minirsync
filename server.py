@@ -10,7 +10,7 @@ def createServer(sync):
     pid = os.fork()
     if pid == 0:
         os.close(fd_read)
-        for srcs_files in sync.files:
+        for srcs_files in sync.src_files:
             data = pickle.dumps(srcs_files)
             size = len(data)
             size = "size:" + str(size) +";"
@@ -18,5 +18,5 @@ def createServer(sync):
             os.write(fd_write, data)
         os.close(fd_write) # Fermer fd_write après avoir écrit dans le pipe
     else:
-        client.connectToServer(sync, fd_read)
+        client.createClient(sync, fd_read)
         os.close(fd_write)

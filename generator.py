@@ -14,11 +14,16 @@ def generateFiles(sync):
         if src.startswith('./'):  # on enleve le ./ si les srcs sont dans le dossier courant
             src = src[2:]
         file.name = src
-        file.header = f"Filename:{file.name},size:{file.size},"
         generateData(sync, file)
         file.hash = checksums.generateHash(file)
-        sync.files.append(file)
+        file.header = f"Filename:{file.name},size:{file.size},hash:{file.hash}"
+        sync.src_files.append(file)
 def generateData(sync, file):
     if sync.args.verbose:
         print("Generating data...")
     file.data = open(file.name, 'rb').read()
+
+def compareFiles(sync):
+{
+    pass
+}

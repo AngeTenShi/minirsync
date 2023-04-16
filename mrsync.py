@@ -2,6 +2,7 @@ import options # import du fichier options.py
 import filelist #import du fichier filelist.py
 import server #import du fichier server.py
 import generator #import du fichier generator.py
+import client #import du fichier client.py
 
 class File:
     def __init__(self):
@@ -16,10 +17,9 @@ class Sync :
     def __init__(self):
         self.args = None
         self.src = None
-        self.files = []
         self.dest = None
-        self.fd_src = None
-        self.fd_dest = None
+        self.src_files = []
+        self.dest_files = []
 
     def setArgs(self, args):
         self.args = args
@@ -40,6 +40,5 @@ if __name__ == '__main__':
         print("Source(s) : ", sync.src)
         print("Destination : ", sync.dest)
         #printLog(sync) function to print log while executing the copy
-    generator.generateFiles(sync)
-    server.createServer(sync)
-
+    if sync.args.server :
+        server.createServer(sync)

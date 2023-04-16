@@ -1,7 +1,7 @@
 import os
 import pickle
 import time
-def connectToServer(sync, fd_read):
+def createClient(sync, fd_read):
     pid = os.fork()
     if pid == 0:
         byte = os.read(fd_read, 1)
