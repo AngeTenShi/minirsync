@@ -4,5 +4,8 @@ def compare_hash(file1, file2):
         return True
 
 def generateHash(file):
-    hash = hashlib.md5(file.data).hexdigest()
+    if file.type == "dir":
+        hash = hashlib.md5(b"").hexdigest()
+    else:
+        hash = hashlib.md5(file.data).hexdigest()
     return hash
