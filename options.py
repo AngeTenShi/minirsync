@@ -33,6 +33,7 @@ def getArgs():
     parser.add_argument('--address', help='Bind address for outgoing socket to daemon')
     parser.add_argument('--port', type=int, help='Specify double-colon alternate port number')
     parser.add_argument('--list-only', action='store_true', help='List the files instead of copying them')
+    parser.add_argument('--server', action='store_true', help='List the files instead of copying them')
     parser.add_argument('src', nargs='+', help='Sources files to sync')
     parser.add_argument('dest' , nargs="?", help='Destination folder to sync (optional if --list-only is used)')
 
@@ -45,8 +46,8 @@ def getArgs():
         args.dest = None
         args.src = args.src[0] # if we are in list only mode we only have one source even if we have more than one in parameter
     else:
-        if len(args.src) > 1:
-            args.dest = args.src[-1]
+        if len(args.src) > 1: # if we have more than one source we have to put the last one in the destination
+            args.dest = args.src[-1] # La destination est le dernier argument ./mrsync.py src1 src2 src3 dest
             args.src = args.src[:-1]
         else:
             print("There is no destination")
