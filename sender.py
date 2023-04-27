@@ -10,6 +10,8 @@ def sendFileList(sync, list_file=None):
     size = len(data)
     size = "size:" + str(size) +";"
     fd_write = os.open("/tmp/mkfifo", os.O_WRONLY)
+    if sync.mode == "REMOTE":
+        os.dup2() #pas fini
     os.write(fd_write, size.encode())
     os.write(fd_write, data)
     os.close(fd_write)

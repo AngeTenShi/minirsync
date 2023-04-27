@@ -3,15 +3,18 @@ import filelist #import du fichier filelist.py
 import server #import du fichier server.py
 import generator #import du fichier generator.py
 import client #import du fichier client.py
+import sender
 import os
 class File:
     def __init__(self):
         self.header = None
         self.name = None
         self.size = None
-        self.hash = None
+        self.hashes = [] # list of hash for rolling checksum
+        self.globalHash = None # global hash for file
         self.data = None
         self.type = None
+        self.indexes_to_send = []
 
 
 class Sync :
@@ -83,5 +86,10 @@ if __name__ == '__main__':
         print("Source(s) : ", sync.src)
         print("Destination : ", sync.dest)
         #printLog(sync) function to print log while executing the copy
-    generator.generateFiles(sync, sync.src, sync.src_files)
-    server.createServer(sync)
+    if sync.args.server:
+        server.createServer(sync)
+        sync.push_or_pull = "PULL"
+        sender.sendFileList(sync, )
+    else:
+        generator.generateFiles(sync, sync.src, sync.src_files)
+        server.createServer(sync)

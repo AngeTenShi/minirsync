@@ -22,6 +22,7 @@ def receiveListofFile(sync):
     listOfFiles = pickle.loads(s)
     os.close(fd_read)
     return listOfFiles #return a list of files
+
 """
 def receiveListOfFiles():
     #receive the list of files by a socket

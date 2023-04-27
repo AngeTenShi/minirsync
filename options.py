@@ -50,7 +50,12 @@ def getArgs():
             args.dest = args.src[-1] # La destination est le dernier argument ./mrsync.py src1 src2 src3 dest
             args.src = args.src[:-1]
         else:
-            print("There is no destination")
-            parser.print_help()
-            sys.exit(1)
+            if len(args.src) == 1:
+                args.list_only = True
+                args.dest = None
+                args.src = args.src[0]
+            else:
+                print("There is no destination")
+                parser.print_help()
+                sys.exit(1)
     return args

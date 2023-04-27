@@ -1,5 +1,6 @@
 import os
 import pickle
+import checksums
 import time
 def getFiles(sync):
     pid = os.fork()
@@ -7,7 +8,10 @@ def getFiles(sync):
         fd_read = os.open("/tmp/mkfifo", os.O_RDONLY)
         byte = os.read(fd_read, 1)
         size = b"s"
+        index = b"i"
+        filename = b"n"
         while byte:
+            # read the size:size; index:index; name:name;
             while byte != b';':
                 byte = os.read(fd_read, 1)
                 size += byte
@@ -15,22 +19,45 @@ def getFiles(sync):
                 print("Error: format size not good")
                 exit(1)
             size = int(size[5:-1])
-            offset = 0
-            buffer = b""
-            while size > 0:
+            byte = os.read(fd_read, 1)
+            while byte != b';':
                 byte = os.read(fd_read, 1)
-                size -= 1
-                buffer += byte
-            file = pickle.loads(buffer)
-            filename = file.name
-            if file.type == "dir":
-                os.makedirs(os.path.join(sync.dest, filename), exist_ok=True)
+                index += byte
+            byte = os.read(fd_read, 1)
+            if index[0:6] != b'index:':
+                print("Error: format index not good")
+                exit(1)
+            index = int(index[6:-1])
+            while byte != b';':
+                byte = os.read(fd_read, 1)
+                filename += byte
+            if filename[0:5] != b'name:':
+                print("Error: format filename not good")
+                exit(1)
+            filename = filename[5:-1].decode()
+            buffer = b""
+            while len(buffer) < size:
+                buffer += os.read(fd_read, size - len(buffer))
+            print("Index : " + str(index) + " Size : " + str(size) + " Filename : " + filename)
+            if filename[-1] == '/':
+                if not os.path.exists(os.path.join(sync.dest, filename)):
+                    os.mkdir(os.path.join(sync.dest, filename))
             else:
-                fd = os.open(os.path.join(sync.dest, filename), os.O_CREAT | os.O_WRONLY | os.O_TRUNC)
-                os.write(fd, file.data)
-                os.close(fd)
+                # replace the part of the block who was modified by the new one
+                # if file exist replace else create
+                if os.path.exists(os.path.join(sync.dest, filename)):
+                    fd = os.open(os.path.join(sync.dest, filename), os.O_RDWR)
+                    os.lseek(fd, index * 1024, 0)
+                    os.write(fd, buffer)
+                    os.close(fd)
+                else:
+                    fd = os.open(os.path.join(sync.dest, filename), os.O_CREAT | os.O_WRONLY)
+                    os.write(fd, buffer)
+                    os.close(fd)
             byte = os.read(fd_read, 1)
             size = b"s"
+            index = b"i"
+            filename = b"n"
         os.close(fd_read)
     else:
         os.wait()
@@ -46,11 +73,16 @@ def sendFiles(sync, list_file):
     if pid == 0:
         fd_write = os.open("/tmp/mkfifo", os.O_WRONLY)
         for file in list_file:
-            data = pickle.dumps(file)
-            size_t = len(data)
-            size = "size:" + str(size_t) +";"
-            os.write(fd_write, size.encode())
-            os.write(fd_write, data)
+            for index in file.indexes_to_send:
+                data = checksums.getBlockByIndex(file, index)
+                size_t = len(data)
+                size = "size:" + str(size_t) +";"
+                index = "index:" + str(index) +";"
+                name = "name:" + file.name +";"
+                os.write(fd_write, size.encode())
+                os.write(fd_write, index.encode())
+                os.write(fd_write, name.encode())
+                os.write(fd_write, data)
         os.close(fd_write)
     else:
         if sync.mode == "LOCAL":

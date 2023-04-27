@@ -39,7 +39,7 @@ def getSrcs(sync):
         if type(args.src) is list and len(args.src) > 1: # if we have more than one source
             for base_folder in args.src:
                 if os.path.isdir(os.path.abspath(base_folder)):
-                    if not base_folder.endswith(os.sep) and base_folder != '.': # if the directory doesn't end with a slash don't add it
+                    if not base_folder.endswith(os.sep) and base_folder != '.' and args.list_only == False: # if the directory doesn't end with a slash don't add it
                         print("Error we are not able to copy a directory without the -r option")
                     else:
                         for file in os.listdir(base_folder):
@@ -57,12 +57,15 @@ def getSrcs(sync):
             else:
                 base_folder = args.src
             if os.path.isdir(os.path.abspath(base_folder)):
-                if not base_folder.endswith(os.sep) and base_folder != '.': # if the directory doesn't end with a slash don't add it
+                if not base_folder.endswith(os.sep) and base_folder != '.' and args.list_only == False: # if the directory doesn't end with a slash don't add it
                     print("Error we are not able to copy a directory without the -r option")
                 else:
                     for file in os.listdir(base_folder):
                         if os.path.isfile(file):
-                            srcs.append(base_folder + '/' + os.path.basename(file)) # add the file to the list but not his directory root
+                            if base_folder.endswith(os.sep):
+                                srcs.append(base_folder + os.path.basename(file))
+                            else:
+                                srcs.append(base_folder + '/' + os.path.basename(file)) # add the file to the list but not his directory root
                         else:
                             srcs.append(file + '/')
                         #print("Adding file %s to the list of files to sync" % (base_folder + '/' + os.path.basename(file)))
@@ -95,7 +98,7 @@ def getDest(sync):
         #get the absolute path of the base folder and add all files into srcs
         base_folder = args.dest
         if os.path.isdir(os.path.abspath(base_folder)):
-            if not base_folder.endswith(os.sep) and base_folder != '.': # if the directory doesn't end with a slash don't add it
+            if not base_folder.endswith(os.sep) and base_folder != '.' and args.list_only == False: # if the directory doesn't end with a slash don't add it
                 print("Error we are not able to copy a directory without the -r option")
             else:
                 for file in os.listdir(base_folder):
@@ -109,7 +112,7 @@ def getDest(sync):
             dest.append(os.path.basename(base_folder))
             #print("Adding file %s to the list of files to sync" % os.path.basename(base_folder))
         else:
-            print("Error: %s is not a directory or a file" % base_folder)
+            print("Error: %s is not a directory or a file, creating it ..." % base_folder)
     return dest
 
 
