@@ -62,6 +62,7 @@ def getFiles(sync):
             index = b"i"
             filename = b"n"
         os.close(fd_read)
+        exit(0)
     else:
         os.wait()
 

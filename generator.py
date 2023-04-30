@@ -88,7 +88,6 @@ def compareFileLists(sync):
             generateFiles(sync, fl.getDest(sync), sync.dest_files)
             list_file = sync.dest_files
         list_file = compareIt(sync, list_file)
-        print("Src ", sync.src)
         client.sendFiles(sync, list_file)
 def generateFiles(sync, filelist, filelist2):
     for src in filelist:
