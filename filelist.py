@@ -1,6 +1,7 @@
 import os
 import datetime
 import stat
+
 def getSrcs(sync):
     """
     Return the list of sources to sync

@@ -38,10 +38,11 @@ def getFiles(sync):
             buffer = b""
             while len(buffer) < size:
                 buffer += os.read(fd_read, size - len(buffer))
-            print("Index : " + str(index) + " Size : " + str(size) + " Filename : " + filename)
+            if sync.args.verbose:
+                print("Index : " + str(index) + " Size : " + str(size) + " Filename : " + filename)
             if filename[-1] == '/':
                 if not os.path.exists(os.path.join(sync.dest, filename)):
-                    os.mkdir(os.path.join(sync.dest, filename))
+                    os.makedirs(os.path.join(sync.dest, filename))
             else:
                 # replace the part of the block who was modified by the new one
                 # if file exist replace else create
@@ -51,6 +52,8 @@ def getFiles(sync):
                     os.write(fd, buffer)
                     os.close(fd)
                 else:
+                    if not os.path.exists(os.path.dirname(os.path.join(sync.dest, filename))):
+                        os.makedirs(os.path.dirname(os.path.join(sync.dest, filename)))
                     fd = os.open(os.path.join(sync.dest, filename), os.O_CREAT | os.O_WRONLY)
                     os.write(fd, buffer)
                     os.close(fd)
@@ -78,7 +81,7 @@ def sendFiles(sync, list_file):
                 size_t = len(data)
                 size = "size:" + str(size_t) +";"
                 index = "index:" + str(index) +";"
-                name = "name:" + file.name +";"
+                name = "name:" + file.finalName +";"
                 os.write(fd_write, size.encode())
                 os.write(fd_write, index.encode())
                 os.write(fd_write, name.encode())
@@ -87,3 +90,4 @@ def sendFiles(sync, list_file):
     else:
         if sync.mode == "LOCAL":
             getFiles(sync)
+

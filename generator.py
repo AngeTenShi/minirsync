@@ -7,6 +7,23 @@ import receiver
 import sender
 import filelist as fl
 
+def remove_first_level(path):
+    # séparer le chemin en segments
+    segments = path.split('/')
+
+    # retirer le premier segment s'il est vide
+    if segments[0] == '':
+        segments = segments[1:]
+
+    # retirer le deuxième segment s'il existe
+    if len(segments) > 1:
+        segments = segments[1:]
+
+    # recombiner les segments en un nouveau chemin
+    new_path = '/'.join(segments)
+
+    return new_path
+
 def compareIt(sync, filelist):
     list_file = []
     for src_files in sync.src_files:
@@ -71,8 +88,8 @@ def compareFileLists(sync):
             generateFiles(sync, fl.getDest(sync), sync.dest_files)
             list_file = sync.dest_files
         list_file = compareIt(sync, list_file)
+        print("Src ", sync.src)
         client.sendFiles(sync, list_file)
-
 def generateFiles(sync, filelist, filelist2):
     for src in filelist:
         if sync.args.verbose:
@@ -82,6 +99,8 @@ def generateFiles(sync, filelist, filelist2):
         if src.startswith('./'):  # on enleve le ./ si les srcs sont dans le dossier courant
             src = src[2:]
         file.name = src
+        # final name = name without src example : ../TP/test.txt -> TP/test.txt /test/test2.txt -> test/test2.txt
+        file.finalName = remove_first_level(src)
         if os.path.isdir(file.name):
             file.type = "dir"
         else:
@@ -89,7 +108,7 @@ def generateFiles(sync, filelist, filelist2):
         generateData(sync, file)
         file.globalHash = checksums.generateGlobalHash(file)
         file.hashes = checksums.generateHash(file)
-        file.header = f"Filename:{file.name},size:{file.size},hash:{file.globalHash}"
+        file.header = f"Filename:{file.finalName},size:{file.size},hash:{file.globalHash}"
         filelist2.append(file)
 
 def generateData(sync, file):

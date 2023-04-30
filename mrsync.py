@@ -9,6 +9,7 @@ class File:
     def __init__(self):
         self.header = None
         self.name = None
+        self.finalName = None
         self.size = None
         self.hashes = [] # list of hash for rolling checksum
         self.globalHash = None # global hash for file
